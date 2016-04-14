@@ -14,7 +14,7 @@ import cv2
 import matplotlib.pylab as plt
 
 # training
-obj = genIMG(labelrange = arange(-1,34), scalefactor = 1.6)
+obj = genIMG(labelrange = arange(-1,34), scalefactor = 1)
 dataset = obj.data
 label = obj.label
 num = dataset.shape[0]
@@ -24,7 +24,7 @@ numTe = int(num*0.01)
 numLabel = 35
 result = []
 
-hog = cv2.HOGDescriptor((dim, dim), (6,6), (3,3), (3,3), 9)
+hog = cv2.HOGDescriptor((dim, dim), (8,8), (4,4), (4,4), 9)
 hist = hog.compute( uint8(reshape(dataset[2,:], (dim,dim))) )
 ELMobj = ELM(hist.size, hist.size*10, numLabel)
 
@@ -52,7 +52,7 @@ toc = time.time()
 print "Time Elapsed =", toc-tic
 print "The classification accuracy is:", Acc
 
-ELMobj.save('C:\\dataspace\\weights\\harbour35_1818')
+ELMobj.save('C:\\dataspace\\weights\\harbour35_28')
 plt.figure()
 plt.imshow( reshape(dataset[2,:], (dim,dim)))
 

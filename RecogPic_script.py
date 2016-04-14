@@ -10,6 +10,8 @@ import matplotlib.pylab as plt
 
 newELMrecogOBJ = ELMrecogPic_real2()
 labelmatrix, testcanvas = newELMrecogOBJ.runtest()
+newELMrecogOBJ.visualize()
+
 
 
 
