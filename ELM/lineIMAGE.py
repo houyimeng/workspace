@@ -11,7 +11,7 @@ from numpy import zeros,reshape,array,random
 from loadImgData import loadImgData
 from normalize import normalize
 
-def lineIMAGE(numDigits, patcharm=28, edgesize=0, DigitLane = 5, Lane = 'h', norm_flag = 1, source = 'binary'):
+def lineIMAGE(numDigits, source, patcharm=28, edgesize=0, DigitLane = 5, Lane = 'h', norm_flag = 0):
 
     num_row = int((numDigits-1)/DigitLane)+1     
     rowpixel = num_row*patcharm + (num_row-1)*edgesize

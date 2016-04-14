@@ -5,19 +5,18 @@ Created on Fri Mar 18 09:36:27 2016
 @author: yimeng
 """
 
-from ELM.ELMrecogPic_beta3 import ELMrecogPic_beta3
+from ELM.ELMrecogPic_real2 import ELMrecogPic_real2
+import matplotlib.pylab as plt
 
-'''
-from numpy import reshape, arange, array
+newELMrecogOBJ = ELMrecogPic_real2()
+labelmatrix, testcanvas = newELMrecogOBJ.runtest()
 
-aaa = array([[8,7,5], [-1,1,-1],[-1,2,1]])
-print aaa
-bbb = massflt(aaa)
-print bbb
-'''
 
-newELMrecogOBJ = ELMrecogPic_beta3()
-labelmatrix, frag_testcanvas = newELMrecogOBJ.runtest()
+
+
+
+
+
 
 
 

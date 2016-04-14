@@ -12,9 +12,7 @@ from ELM import ELM
 from MNISTCanvasImage import MNISTCanvasImage
 import matplotlib.pylab as plt 
 from numpy import zeros, array
-from ImageToolbox.zeropadding import zeropadding
-from lineMNIST import lineMNIST
-from ELMtoolbox.distCal import distCal
+from zeropadding import zeropadding
 import random
 
 

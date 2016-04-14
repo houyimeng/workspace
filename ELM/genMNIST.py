@@ -8,47 +8,32 @@ Created on Fri Mar 25 13:25:02 2016
 from MNISTDataset import MNISTDataset
 from numpy import zeros, array, random, reshape, vstack, ones, hstack
 from zeropadding import zeropadding
-from loadImgData import loadImgData
 import math
 import pickle
 
-class genData(object):
+class genMNIST(object):
     
-    def __init__(self, dtsource = 'MNIST'):
+    def __init__(self):
         
-        self.inputsize = 18
+        self.inputsize = 28
         self.halfsize = self.inputsize/2
-        self.dtsource = dtsource
         self.argu_flg = 0
-        self.numLabel = 10
+        self.numLabel = 11
         
-        if self.dtsource == 'MNIST':
-            self.numtr = 60000
-            self.numte = 10000
-            self.num11 = int((self.numtr+self.numte)/10) 
-            
-            if self.argu_flg == 1:
-                self.numArgu = 30000       
-                self.numSum = self.numtr+self.numte+self.numArgu+self.num11
-            else:
-                self.numSum = self.numtr+self.numte+self.num11
-                
-            self.dataset = zeros((self.numSum, self.inputsize**2))
-            self.labels = zeros((self.numSum, self.numLabel))
-            
-            self.genMNISTData()
-        else:           
-            itemTr, labelTr, itemTe, labelTe = loadImgData(self.dtsource)
-            self.numtr = itemTr.shape[0]
-            self.numte = itemTe.shape[0] 
-            self.num11 = int((self.numtr+self.numte))
+        self.numtr = 60000
+        self.numte = 10000
+        self.num11 = int((self.numtr+self.numte)/5) 
+        
+        if self.argu_flg == 1:
+            self.numArgu = 30000       
+            self.numSum = self.numtr+self.numte+self.numArgu+self.num11
+        else:
             self.numSum = self.numtr+self.numte+self.num11
-            self.dataset = zeros((self.numSum, self.inputsize**2))
-            self.labels = zeros((self.numSum, self.numLabel))
-           
-            self.dataset[:self.numtr+self.numte,:] = vstack(( itemTr, itemTe ))
-            self.labels[:self.numtr+self.numte,0:10] = vstack(( labelTr, labelTe ))
-
+            
+        self.dataset = zeros((self.numSum, self.inputsize**2))
+        self.labels = zeros((self.numSum, self.numLabel))
+        
+        self.genMNISTData()
         self.make11Data()
         
         shuffle_idx = random.permutation(self.numSum)
@@ -62,7 +47,7 @@ class genData(object):
     def genMNISTData(self):  
         
         print "Now making MNIST dataset..."        
-        MNISTdata = MNISTDataset("MNIST")        
+        MNISTdata = MNISTDataset("C:\\dataspace\\MNIST")        
 
         for i in range(self.numtr):
                 
@@ -113,8 +98,7 @@ class genData(object):
         factor = 4
         
         for iters in range(rounds):
-            canvas, truelabelmatrix = self.lineIMAGE()
-            print canvas.shape                
+            canvas, truelabelmatrix = self.lineIMAGE()             
             
             container = []
             for i in range(self.halfsize, canvas.shape[0]-self.halfsize):

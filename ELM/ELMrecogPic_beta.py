@@ -7,25 +7,25 @@ Created on Fri Apr  1 09:12:43 2016
 
 from ELM import ELM
 import matplotlib.pylab as plt 
-from numpy import zeros, where, vstack, array, ones, argsort, absolute, mean, reshape
+from numpy import zeros, where, vstack, array, ones, argsort, absolute, reshape
 from kmean import kmean
 from zeropadding import zeropadding
 from lineIMAGE import lineIMAGE
 from lineMNIST import lineMNIST
 from distCal import distCal
 from massflt import massflt
-from PIL import Image
+import cv2
 import os
 
 class ELMrecogPic_beta(object):
     
-    def __init__(self, lane = 'v'):
+    def __init__(self, lane = 'h'):
         
         self.patcharm = 28
-        self.Outsize = 2 
+        self.Outsize = 11
         self.newELM = ELM(self.patcharm**2, (self.patcharm**2)*10, self.Outsize)
-        self.newELM.load('C:\\ELMframework\\w8\\binary')
-        #self.newELM.load('C:\\ELMframework\\w8\\MNIdata')            
+        # load pre-trained weights here!
+        self.newELM.load('C:\\dataspace\\weights\\MNIdata')            
         
         self.truecolormatrix =  None
         self.hatcolormatrix =  None
@@ -38,7 +38,7 @@ class ELMrecogPic_beta(object):
         
         fltSize = self.patcharm
         halfSize = fltSize/2
-        datasource = 'others' # 'synthesis' or others
+        datasource = 'MNIST' # 'MNIST', 'synthesis' or 'others'
         
         if datasource == 'MNIST':            
             self.testcanvas0, labeltrue, canvasSize0 = lineMNIST(numDigits) 
@@ -47,13 +47,12 @@ class ELMrecogPic_beta(object):
             path = 'C:\\comingdata\\others\\'
             dirs = os.listdir(path)
             for item in dirs: 
-                img = Image.open(path+item)
-                img = img.crop(( int(img.size[0]/5), 1, int(img.size[0]/3), int(img.size[1]/2)))
+                img = cv2.imread(path+item)
+                #img = img[int(img.size[0]/5):int(img.size[0]/3),:int(img.size[1]/2)))
                 SIZE = ( img.size[0], img.size[1] )
                 #SIZE = ( int(img.size[0]*1.6), int(img.size[1]*1.6) )
-                #img = img.resize(SIZE, Image.BILINEAR)
+                img = cv2.resize(img, (0,0), fx=1.4, fy=1.4)
                 temp_canvas0 = array(img.getdata())/255
-                print temp_canvas0.shape
                 self.testcanvas0 = reshape( temp_canvas0, (SIZE[1], SIZE[0]))
             canvasSize0 = array([SIZE[1], SIZE[0]])
         else:
@@ -63,7 +62,7 @@ class ELMrecogPic_beta(object):
         testcanvas = zeropadding(self.testcanvas0, halfSize, halfSize)    
         canvasSize = array(canvasSize0) + fltSize
         
-        ## convolving part
+        ## convolving canvas
         tot_count = (canvasSize[0]-fltSize)*(canvasSize[1]-fltSize)
         self.labelmatrix0 = zeros((canvasSize[0]-fltSize, canvasSize[1]-fltSize))
         self.labelmatrix = zeros((canvasSize[0]-fltSize, canvasSize[1]-fltSize))
@@ -77,9 +76,10 @@ class ELMrecogPic_beta(object):
                 item_temp = testcanvas[x-halfSize:x+halfSize, y-halfSize:y+halfSize]
                 labelhatpatch = self.newELM.recall(item_temp)                     
                 self.labelmatrix0[x-halfSize,y-halfSize] = distCal(labelhatpatch)               
-                
-        #self.labelmatrix = massflt(self.labelmatrix0)
-        self.labelmatrix = self.labelmatrix0
+        
+        # use a mass flt to flt the result        
+        self.labelmatrix = massflt(self.labelmatrix0)
+        #self.labelmatrix = self.labelmatrix0
         
         ## clustering            
         clust_temp = where(self.labelmatrix != -1)    

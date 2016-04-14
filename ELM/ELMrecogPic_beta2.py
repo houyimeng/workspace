@@ -21,8 +21,7 @@ class ELMrecogPic_beta2(object):
         self.patcharm = 28
         self.Outsize = 10
         self.newELM = ELM(self.patcharm**2, (self.patcharm**2)*10, self.Outsize)
-        #self.newELM.load('C:\\ELMframework\\w8\\MNIdata')
-        self.newELM.load('C:\\ELMframework\\w8\\koutu')            
+        self.newELM.load('C:\\dataspace\\weights\\')            
         
         self.truecolormatrix =  None
         self.hatcolormatrix =  None
@@ -35,16 +34,12 @@ class ELMrecogPic_beta2(object):
         
         fltSize = 28
         halfSize = 14
-        displaysize = 2
-        DigitLane = 20
-        edgeSize = 0
         datasource = 'binary' # 'synthesis' or others
-        norm_flag = 1
         
         if datasource == 'MNIST':            
-            self.testcanvas0, labeltrue, canvasSize0 = lineMNIST(numDigits, edgeSize, DigitLane, self.Lane, norm_flag)         
+            self.testcanvas0, labeltrue, canvasSize0 = lineMNIST(numDigits)         
         else:
-            self.testcanvas0, labeltrue, canvasSize0 = lineIMAGE(self.patcharm, numDigits, edgeSize, DigitLane, self.Lane, norm_flag, datasource)
+            self.testcanvas0, labeltrue, canvasSize0 = lineIMAGE(numDigits, datasource)
 
         ## zeropadding
         testcanvas = zeropadding(self.testcanvas0, halfSize, halfSize)    
@@ -118,7 +113,7 @@ class ELMrecogPic_beta2(object):
         
         self.truecolormatrix =  (-1)*ones((canvasSize[0]-fltSize, canvasSize[1]-fltSize))
         self.hatcolormatrix  =  (-1)*ones((canvasSize[0]-fltSize, canvasSize[1]-fltSize))
-        
+        displaysize = 2        
         # visualize the centroids and their labels
         for i in range(len(centroids)):
             self.truecolormatrix [round(centroids[i][0])-displaysize:round(centroids[i][0])+displaysize, \

@@ -6,8 +6,6 @@ Created on Mon Apr 11 14:29:32 2016
 """
 import math
 from numpy import pad, zeros
-import cv2
-import os
 import matplotlib.pylab as plt
 
 def zeropadding(matrix, leftPad,rightPad,topPad,bottomPad, constant_val = 0):
@@ -26,15 +24,12 @@ def fragImg(inputImg, wind_size):
     pad_lower = b_pad-pad_upper
     pad_left = a_pad/2
     pad_right = a_pad-pad_left
-    print pad_upper, pad_lower, pad_left, pad_right
     
     inputImg_aft = zeropadding(inputImg, pad_left, pad_right, pad_upper, pad_lower, constant_val = 0)
-    print inputImg.shape
-    print inputImg_aft.shape
-    
+
     tot_img = int(a_num)*int(b_num)
     img_patches = zeros((tot_img, wind_size[0]*wind_size[1]))
-    print inputImg_aft.shape
+
     # segment images
     for i in range(int(a_num)):
         for j in range(int(b_num)):

@@ -18,7 +18,7 @@ def distCal(inputArray):
         sqrt_temp = map(lambda p,q: (p-q)**2, table[:,dist] , inputArray)
         ans[dist] = reduce(lambda p,q: p+q, sqrt_temp)
     
-    if ans.argmin() == sz:#or ans.argmin() == sz-1:
+    if ans.argmin() == sz or ans.argmin() == sz-1:
         return -1
     else:
         return ans.argmin()

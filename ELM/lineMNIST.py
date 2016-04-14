@@ -11,7 +11,7 @@ from numpy import zeros,reshape,array,random
 from MNISTDataset import MNISTDataset
 from normalize import normalize
 
-def lineMNIST(numDigits, edgesize = 0, DigitLane = 5, Lane = 'h', norm_flag = 1):
+def lineMNIST(numDigits, edgesize = 0, DigitLane = 10, Lane = 'h', norm_flag = 0):
 
     num_row = int((numDigits-1)/DigitLane)+1     
     rowpixel = num_row*28+ (num_row-1)*edgesize
@@ -22,7 +22,7 @@ def lineMNIST(numDigits, edgesize = 0, DigitLane = 5, Lane = 'h', norm_flag = 1)
     else:
         colpixel = numDigits*28 + (numDigits-1)*edgesize
         
-    dataset = MNISTDataset('MNIST')
+    dataset = MNISTDataset('C:\\dataspace\\MNIST')
     content_a = zeros((10000, 784))
     content_b = zeros((10000, 10))
     

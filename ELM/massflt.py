@@ -7,9 +7,9 @@ Created on Fri Apr 01 16:12:26 2016
 from numpy import ones
 from zeropadding import zeropadding
 
-def massflt(inputdata, threshold = 20):
+def massflt(inputdata, threshold = 5):
     
-    flt_arm = 2
+    flt_arm = 1
     inputmatrix = zeropadding(inputdata, flt_arm, flt_arm, -1)
     m, n = inputmatrix.shape
     outdata = -1*ones(inputdata.shape)
