@@ -14,7 +14,7 @@ import cv2
 import matplotlib.pylab as plt
 
 # training
-obj = genIMG(labelrange = arange(-1,34), scalefactor = 1)
+obj = genIMG(labelrange = arange(-1,34), scalefactor = 1.4)
 dataset = obj.data
 label = obj.label
 num = dataset.shape[0]
@@ -52,7 +52,7 @@ toc = time.time()
 print "Time Elapsed =", toc-tic
 print "The classification accuracy is:", Acc
 
-ELMobj.save('C:\\dataspace\\weights\\harbour35_28')
+ELMobj.save('C:\\dataspace\\weights\\harbour35_20')
 plt.figure()
 plt.imshow( reshape(dataset[2,:], (dim,dim)))
 

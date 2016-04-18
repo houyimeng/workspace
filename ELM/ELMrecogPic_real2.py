@@ -25,14 +25,15 @@ class ELMrecogPic_real2(object):
     def runtest(self):
         
         # load tested image        
-        crop_rg = [0.6, 0.7, 0.05, 0.6]                
+        crop_rg = [0.4, 0.6, 0.05, 0.7] 
+        scaleFactor = 0.6               
         path = 'C:\\dataspace\\IMGdata\\others\\'
         dirs = os.listdir(path)
         for item in dirs: 
             img = cv2.imread(path+item, 0)
             img = img[int(img.shape[0]*crop_rg[2]):int(img.shape[0]*crop_rg[3]), int(img.shape[1]*crop_rg[0]):int(img.shape[1]*crop_rg[1])]
             #self.testcanvas = img
-            self.testcanvas = cv2.resize(img, (0,0), fx=0.55, fy=0.55)
+            self.testcanvas = cv2.resize(img, (0,0), fx=scaleFactor, fy=scaleFactor)
             print "The size of the testcanvas:", self.testcanvas.shape
             cv2.imwrite('greyscale.png', img)
 
@@ -64,7 +65,7 @@ class ELMrecogPic_real2(object):
                     label_val = distCal(labelhatpatch)
                     self.labelmatrix[y-halfSize, x-halfSize] = label_val
                     if label_val != -1:
-                        stepsize = 2
+                        stepsize = 3
                         for i in range(-stepsize+1, 0):
                             for j in range(-stepsize+1, 0):
                                 item_sec = testcanvas[y-halfSize+i:y+halfSize+i, x-halfSize+j:x+halfSize+j]
@@ -99,7 +100,7 @@ class ELMrecogPic_real2(object):
                  
         labelhat = zeros(numDigits)
         centroids = zeros((numDigits, 2))
-        #centroids = zeros((numDigits, 2))
+        
         for i in range(1, numDigits):
             
             centroid_x, centroid_y = 0,0
@@ -115,9 +116,8 @@ class ELMrecogPic_real2(object):
                 countnum[self.labelmatrix[data_coor[0, k], data_coor[1, k]]] += 1/distfactor # equalization
                 
             labelhat[i] = countnum.argmax()
-            
-            print "Number/letter found list below:"
-            print "Number/letter :", i ,", Coordinates =", "(", int(centroids[i-1, 0]), ',', int(centroids[i-1, 1]), "), Prediction:", codetable(int(labelhat[i]))  
+        
+            print "Number/letter :", i ,", Coordinates =", "(", int(centroids[i-1, 0]), ',', int(centroids[i-1, 1]), "), Prediction ->", int(labelhat[i])  
 
         
         return self.labelmatrix, self.testcanvas

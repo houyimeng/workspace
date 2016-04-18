@@ -5,11 +5,11 @@ Created on Fri Mar 18 09:36:27 2016
 @author: yimeng
 """
 
-from ELM.ELMrecogPic_real2 import ELMrecogPic_real2
+from ELM.ELMrecogPic_real3 import ELMrecogPic_real3
 import matplotlib.pylab as plt
 
-newELMrecogOBJ = ELMrecogPic_real2()
-labelmatrix, testcanvas = newELMrecogOBJ.runtest()
+newELMrecogOBJ = ELMrecogPic_real3()
+labelmatrix_20, labelmatrix_24, labelmatrix_28, testcanvas = newELMrecogOBJ.runtest()
 newELMrecogOBJ.visualize()
 
 
