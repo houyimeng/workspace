@@ -15,7 +15,7 @@ import pickle
 
 class ELM(AbstractNetwork):
     
-    def __init__(self, InSize, HidSize, OutSize, genWeights_type = 'dec'):
+    def __init__(self, InSize, HidSize, OutSize, OPIUM_type = 'lite', genWeights_type = 'dec'):
         
         AbstractNetwork.__init__(self, InSize, HidSize, OutSize)
         self.genWeights_type = genWeights_type # type of generating weights
@@ -26,7 +26,12 @@ class ELM(AbstractNetwork):
             self.RandomWeight = random.rand(self.HidSize, self.InSize) - 0.5
         else:
             raise Exception("Invalid type of generating random weights")
-                        
+        
+        if OPIUM_type == 'lite':
+            self.theta = 1
+        elif OPIUM_type == 'basic': 
+            self.theta = eye(self.HidSize)
+                
         self.LinearWeight = zeros((self.OutSize, self.HidSize))
         self.Test_output_hat = zeros((self.OutSize, 1))
            
@@ -37,7 +42,7 @@ class ELM(AbstractNetwork):
         activation = tanh(activation)
         train_output_hat = dot(self.LinearWeight, activation) # observed output
         e = train_label - train_output_hat # deviation        
-        OPIUMl(activation, e, self.LinearWeight, 1)
+        OPIUMl(activation, e, self.LinearWeight, self.theta)
         
         return train_output_hat
         

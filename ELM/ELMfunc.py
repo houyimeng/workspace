@@ -6,9 +6,9 @@ Created on Thu Mar 10 11:56:41 2016
 """
 
 from numpy import tanh, dot, reshape, eye
-from ELM.OPIUM import *
+from OPIUM import *
 
-def ELMtrain(train_item, train_label, RandomWeight, LinearWeight, Insize, Hidsize, Outsize, method, datatype):
+def train(train_item, train_label, RandomWeight, LinearWeight, Insize, Hidsize, Outsize, method, datatype):
        
     # training
     train_item = reshape(train_item, (Insize, 1))
@@ -27,7 +27,7 @@ def ELMtrain(train_item, train_label, RandomWeight, LinearWeight, Insize, Hidsiz
     return RandomWeight, LinearWeight    
     
     # testing    
-def ELMrecall(test_item, RandomWeight, LinearWeight, Insize):
+def recall(test_item, RandomWeight, LinearWeight, Insize):
      test_item = reshape(test_item, (Insize,1))
      activation = tanh(dot(RandomWeight, test_item))
      Output_hat = dot(LinearWeight, activation)
