@@ -1,17 +1,17 @@
-
 from ELM import ELM
 import matplotlib.pylab as plt 
-from numpy import array, uint8, ones, where, vstack, zeros, sqrt, hstack, argsort, random, std
+from numpy import array, uint8, ones, where, vstack, zeros, sqrt, hstack, argsort, random, std, absolute
 from zeropadding import zeropadding
 from distCal import *
 from codetable import codetable
+from showNumLet import showNumLet
 import cv2
 import os
 
 def find(lst, tar):
     return [i for i, x in enumerate(lst) if x == tar]
 
-class ELMrecogPic_v2(object):
+class ELMrecogPic_v2_new(object):
     
     def __init__(self):
         
@@ -34,14 +34,12 @@ class ELMrecogPic_v2(object):
 
 ###############################################################################
         # load image & prep           
-        #crop_rg = [0.05, 0.95, 0.05, 0.5]
-        scaleFactor = 0.5      
+        scaleFactor = 0.5   
         dirs = os.listdir(path)
         rand_idx = random.randint(len(dirs))
-        img = cv2.imread(path+dirs[rand_idx], 0)
-        #img = img[int(img.shape[0]*crop_rg[2]):int(img.shape[0]*crop_rg[3]), int(img.shape[1]*crop_rg[0]):int(img.shape[1]*crop_rg[1])]
+        img = cv2.imread(path+dirs[14], 0)
         self.testcanvas = cv2.resize(img, (0,0), fx=scaleFactor, fy=scaleFactor)
-        print "> Grabing a random canvas for testing ... "
+        print "> Grabing a random canvas", dirs[rand_idx] , "for testing ... "
         print '> Image SIZE:', self.testcanvas.shape
         print '> Step SIZE:', self.stepsize   
         
@@ -49,13 +47,13 @@ class ELMrecogPic_v2(object):
         ## convolving part 1        
         fltSize_20 = self.dim[0]
         halfSize_20 = self.dim[0]/2
-        
+        boundry_thresh = 14
         ## zeropadding
         testcanvas = zeropadding(self.testcanvas, halfSize_20, halfSize_20)    
         canvasSize = array(self.testcanvas.shape) + fltSize_20   
 
         self.labelmatrix_20 = -1*ones(( canvasSize[0]-fltSize_20, canvasSize[1]-fltSize_20))
-        self.confidence_20 = -1*ones(( canvasSize[0]-fltSize_20, canvasSize[1]-fltSize_20))        
+        self.confidence_20 = 10*ones(( canvasSize[0]-fltSize_20, canvasSize[1]-fltSize_20))        
         print "> Convolving part 1 in progress ..., WindowSize = (20,20)"
         for y in range(halfSize_20, canvasSize[0]-halfSize_20):
             for x in range(halfSize_20, canvasSize[1]-halfSize_20):
@@ -79,7 +77,7 @@ class ELMrecogPic_v2(object):
         canvasSize = array(self.testcanvas.shape) + fltSize_24   
         ## convolving part 1
         self.labelmatrix_24 = -1*ones(( canvasSize[0]-fltSize_24, canvasSize[1]-fltSize_24))
-        self.confidence_24 = -1*ones(( canvasSize[0]-fltSize_24, canvasSize[1]-fltSize_24))         
+        self.confidence_24 = 10*ones(( canvasSize[0]-fltSize_24, canvasSize[1]-fltSize_24))         
         print "> Convolving part 2 in progress ..., WindowSize = (24,24)"
         for y in range(halfSize_24, canvasSize[0]-halfSize_24):
             for x in range(halfSize_24, canvasSize[1]-halfSize_24):
@@ -103,7 +101,7 @@ class ELMrecogPic_v2(object):
         canvasSize = array(self.testcanvas.shape) + fltSize_28   
         ## convolving part 1
         self.labelmatrix_28 = -1*ones(( canvasSize[0]-fltSize_28, canvasSize[1]-fltSize_28))
-        self.confidence_28 = -1*ones(( canvasSize[0]-fltSize_28, canvasSize[1]-fltSize_28))         
+        self.confidence_28 = 10*ones(( canvasSize[0]-fltSize_28, canvasSize[1]-fltSize_28))         
         print "> Convolving part 3 in progress ..., WindowSize = (28,28)"
         for y in range(halfSize_28, canvasSize[0]-halfSize_28):
             for x in range(halfSize_28, canvasSize[1]-halfSize_28):
@@ -119,36 +117,59 @@ class ELMrecogPic_v2(object):
         
 ################################################################################
         # get several possible centers    
-                        
+        print "Start post-convolving process ..."
+                
         clust_temp_20 = where(self.labelmatrix_20 != -1)
         clust_temp_24 = where(self.labelmatrix_24 != -1)
-        clust_temp_28 = where(self.labelmatrix_28 != -1)
-        len_clust = array([len(clust_temp_20), len(clust_temp_24), len(clust_temp_28)])
-        self.main_kernel = len_clust.argmax()
-        
+        clust_temp_28 = where(self.labelmatrix_28 != -1)        
         clust_temp_x = hstack((clust_temp_20[0], clust_temp_24[0], clust_temp_28[0]))
         clust_temp_y = hstack((clust_temp_20[1], clust_temp_24[1], clust_temp_28[1]))
         data_coor = vstack((clust_temp_x, clust_temp_y))
             
         center = ones(data_coor.shape[1])
-        
-        numDigits = 2  
-        for i in range(1, data_coor.shape[1]):
-            coor = [data_coor[0,i], data_coor[1,i]]
-            dist = zeros(i)
-        
-            for j in range(0, i):
-                dist[j] = sqrt((coor[0] - data_coor[0, j])**2 + (coor[1] - data_coor[1, j])**2)
-            if min(dist) <= halfSize_28:
-                center[i] =  center[dist.argmin()]
-            else:
+        num_center0 = zeros(data_coor.shape[1]) # to be cut    
+        numDigits = 0  
+        mean_center = []
+
+        for i in range(0, data_coor.shape[1]):
+            # get coordinates
+            coor = array([data_coor[0,i], data_coor[1,i]]) 
+            
+            if i  == 0:
+                mean_center.append( coor )
                 center[i] = numDigits
-                numDigits += 1       
-        
+                num_center0[numDigits] += 1
+                numDigits += 1
+
+            elif i > 0 :                   
+                dist = zeros(numDigits)        
+                for j in range(0, numDigits):
+                    mean_center_tmp = mean_center[j]
+                    tmp_coor_x = mean_center_tmp[0]
+                    tmp_coor_y = mean_center_tmp[1]
+                    
+                    dist[j] = max(absolute(coor[0] - tmp_coor_x) , absolute(coor[1] - tmp_coor_y))
+                     
+                if min(dist) <= boundry_thresh:
+                    min_idx = dist.argmin() 
+                    center[i] =  center[min_idx]
+                    mean_tmp_new = ( mean_center[min_idx] * num_center0[min_idx] + coor )/(num_center0[min_idx]+1)
+                    mean_center[min_idx] = mean_tmp_new
+                    num_center0[min_idx] += 1
+                    
+                else:
+                    center[i] = numDigits
+                    mean_center.append( coor )
+                    num_center0[numDigits] += 1
+                    numDigits += 1 
+                    
+        #center_last_idx = find(num_center0, 0)            
+        #num_center = num_center0[:center_last_idx[0]]
+
 ##############################################################################
         # make decision         
-        self.labelhat = zeros(numDigits-1)
-        self.centroids = zeros((2, numDigits-1))
+        self.labelhat = zeros(numDigits)
+        self.centroids = zeros((2, numDigits))
         n_cout = 0
         
         for i in set(center):            
@@ -163,7 +184,7 @@ class ELMrecogPic_v2(object):
                     k_val[k] = self.confidence_24[data_coor[0, k], data_coor[1, k]] 
                 else:
                     k_val[k] = self.confidence_28[data_coor[0, k], data_coor[1, k]]
-                    
+            
             self.centroids[0, n_cout] = data_coor[0, k_val.argmin()]
             self.centroids[1, n_cout] = data_coor[1, k_val.argmin()] 
             
@@ -186,66 +207,69 @@ class ELMrecogPic_v2(object):
             self.centroidindex = argsort(self.centroids[1,:])
             self.lane_flg = 'h'
 
+        # show mean center 
+        self.centermatrix = zeros(self.testcanvas.shape)
+        self.centermatrix[0,0] = 2
+        
         n_start = 1
         for i in self.centroidindex:
             print "Prediction", n_start ,", Coordinates=", "(", int(self.centroids[0, i]), ',', int(self.centroids[1, i]), \
                     "), Label ->", codetable(int(self.labelhat[i]))         
-            n_start += 1      
-        
+            
+            center_coor = mean_center[i]
+            img_show = showNumLet( str(int(self.labelhat[i])) )
+            self.centermatrix[center_coor[0]-2:center_coor[0]+3, \
+                              center_coor[1]-1:center_coor[1]+2] = img_show
+            n_start += 1  
+                 
         return self.labelhat
 
     def savePATCH(self):
         dir_name = 'C:\\dataspace\\Recognition\\'
         n_start = 1
-        kearm = self.dim[self.main_kernel]/2
+        kearm1 = 28/2
+        kearm = kearm1*1.3
         for ii in self.centroidindex:
             x_cor, y_cor = self.centroids[0,ii], self.centroids[1,ii]           
             if x_cor < kearm:
                 img_coor = self.testcanvas[:int(x_cor+kearm), \
-                                        int(y_cor-kearm):int(y_cor+kearm) ]
-            elif y_cor < kearm:
+                                        int(y_cor-kearm1):int(y_cor+kearm1) ]
+            elif y_cor < kearm1:
                 img_coor = self.testcanvas[int(x_cor-kearm):int(x_cor+kearm),\
-                                           :int(y_cor+kearm) ]
+                                           :int(y_cor+kearm1) ]
             elif x_cor > self.testcanvas.shape[0] + kearm:
                 img_coor = self.testcanvas[int(x_cor-kearm):, \
-                                           int(y_cor-kearm):int(y_cor+kearm) ] 
-            elif y_cor > self.testcanvas.shape[1] + kearm:
+                                           int(y_cor-kearm1):int(y_cor+kearm1) ] 
+            elif y_cor > self.testcanvas.shape[1] + kearm1:
                 img_coor = self.testcanvas[int(x_cor-kearm):int(x_cor+kearm), \
-                                           :int(y_cor+kearm) ] 
-            elif x_cor > self.testcanvas.shape[0] + kearm and y_cor > self.testcanvas.shape[1] + kearm:
-                img_coor = self.testcanvas[int(x_cor-kearm):, int(y_cor-kearm):] 
+                                           :int(y_cor+kearm1) ] 
+            elif x_cor > self.testcanvas.shape[0] + kearm and y_cor > self.testcanvas.shape[1] + kearm1:
+                img_coor = self.testcanvas[int(x_cor-kearm):, int(y_cor-kearm1):] 
                 
-            elif x_cor < kearm and y_cor < kearm:
-                img_coor = self.testcanvas[:int(x_cor+kearm), :int(y_cor+kearm)] 
+            elif x_cor < kearm and y_cor < kearm1:
+                img_coor = self.testcanvas[:int(x_cor+kearm), :int(y_cor+kearm1)] 
                 
             else:                
                 img_coor = self.testcanvas[int(x_cor-kearm):int(x_cor+kearm), \
-                                        int(y_cor-kearm):int(y_cor+kearm) ]           
+                                        int(y_cor-kearm1):int(y_cor+kearm1) ]           
             file_name = 'IMG_'+str(n_start)+'_LABEL_'+str(codetable(self.labelhat[ii]))+'.jpg'
             cv2.imwrite( os.path.join(dir_name, file_name), img_coor)
             n_start += 1
         
     def visualize(self):
             
-        fig = plt.figure()
+        fig = plt.figure(0)
         
         if self.lane_flg == 'v':
-            fig.add_subplot(1,4,1)
+            fig.add_subplot(1,2,1)
             plt.imshow(self.testcanvas)
-            fig.add_subplot(1,4,2)
-            plt.imshow(self.labelmatrix_20)  
-            fig.add_subplot(1,4,3)
-            plt.imshow(self.labelmatrix_24)  
-            fig.add_subplot(1,4,4)
-            plt.imshow(self.labelmatrix_28)
-        else:
-            fig.add_subplot(4,1,1)
-            plt.imshow(self.testcanvas)
-            fig.add_subplot(4,1,2)
-            plt.imshow(self.labelmatrix_20)  
-            fig.add_subplot(4,1,3)
-            plt.imshow(self.labelmatrix_24)  
-            fig.add_subplot(4,1,4)
-            plt.imshow(self.labelmatrix_28) 
-        
+            fig.add_subplot(1,2,2)
+            plt.imshow(self.centermatrix)  
 
+        else:
+            fig.add_subplot(2,1,1)
+            plt.imshow(self.testcanvas)
+            fig.add_subplot(2,1,2)
+            plt.imshow(self.centermatrix)  
+
+        

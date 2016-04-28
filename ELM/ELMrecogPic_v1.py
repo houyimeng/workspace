@@ -21,9 +21,9 @@ class ELMrecogPic_v1(object):
         self.newELM_20 = ELM(self.patcharm[0], self.patcharm[0]*10, self.Outsize)
         self.newELM_24 = ELM(self.patcharm[1], self.patcharm[1]*10, self.Outsize)        
         self.newELM_28 = ELM(self.patcharm[2], self.patcharm[2]*10, self.Outsize)
-        self.newELM_20.load('C:\\dataspace\\weights\\harbour34_20')  
-        self.newELM_24.load('C:\\dataspace\\weights\\harbour34_24')   
-        self.newELM_28.load('C:\\dataspace\\weights\\harbour34_28')           
+        self.newELM_20.load('C:\\dataspace\\weights\\harbour34_20_basic')  
+        self.newELM_24.load('C:\\dataspace\\weights\\harbour34_24_basic')   
+        self.newELM_28.load('C:\\dataspace\\weights\\harbour34_28_basic')           
         self.hog_20 = cv2.HOGDescriptor((self.dim[0], self.dim[0]), (8,8), (4,4), (4,4), 9)
         self.hog_24 = cv2.HOGDescriptor((self.dim[1], self.dim[1]), (8,8), (4,4), (4,4), 9)
         self.hog_28 = cv2.HOGDescriptor((self.dim[2], self.dim[2]), (8,8), (4,4), (4,4), 9)
@@ -32,7 +32,7 @@ class ELMrecogPic_v1(object):
         
         stepsize = 4  
         #crop_rg = [0.05, 0.5, 0.05, 0.5] 
-        scaleFactor = 0.5               
+        scaleFactor = 0.4              
         dirs = os.listdir(path)
         rand_idx = random.randint(len(dirs))
         img = cv2.imread(path+dirs[rand_idx], 0)
@@ -130,7 +130,7 @@ class ELMrecogPic_v1(object):
         
             for j in range(0, i):
                 dist[j] = sqrt((coor[0] - data_coor[0, j])**2 + (coor[1] - data_coor[1, j])**2)
-            if min(dist) <= halfSize_28:
+            if min(dist) <= fltSize_20:
                 center[i] =  center[dist.argmin()]
             else:
                 center[i] = numDigits

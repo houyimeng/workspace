@@ -9,7 +9,7 @@ from zeropadding import zeropadding
 
 def massflt(inputdata):
     flt_arm = 3
-    threshold = (flt_arm*2+1)**2-9/3
+    threshold = (flt_arm*2+1)**2-5
     inputmatrix = zeropadding(inputdata, flt_arm, flt_arm, -1)
     m, n = inputmatrix.shape
     outdata = -1*ones(inputdata.shape)

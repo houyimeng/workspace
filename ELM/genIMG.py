@@ -11,7 +11,7 @@ import os
 
 class genIMG(object):
     
-    def __init__(self, folder='color', labelrange=arange(-1,33), scalefactor=1.0):
+    def __init__(self, scalefactor, folder='colorful_merge', labelrange=arange(-1,33), ):
         
         self.numLabel = len(labelrange)
         self.folder = folder
